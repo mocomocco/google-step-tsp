@@ -197,7 +197,7 @@ tree->n3=insert (key, word, tree->n3,++h);
 void sort(char* word,int *num){
 int numr[26]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-for(h=0;h<16;h++){
+ for(h=0;h<strlen(word);h++){
 i=word[h]-97;
 if(i<0)i=word[h]-65;
 if((0<=i)&&(i<=26))numr[i]++;
@@ -209,7 +209,9 @@ fprintf(fp2,"%d ",num[h]);
 }
 
  num[25]=num[25]-num[2];
-
+ /*for(h=0;h<26;h++){
+  printf("%d",num[h]);}
+  printf("\n");*/
 }
 
 tree_type *dictionary_tree(tree_type *tree){
@@ -235,6 +237,7 @@ str = (char*)malloc(sizeof(str));
 for(h=0;h<26;h++){
 num[h]=0;}
 sort(str,num);
+
 tree=insert(num,str,tree,0);
 
 
