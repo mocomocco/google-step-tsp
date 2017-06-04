@@ -30,6 +30,7 @@ typedef struct tree_t {
 tree_type *make_tree (int x) {
   tree_type *tree;
   tree = (tree_type *) malloc (sizeof (tree_type));
+
   tree->se=x;
   tree->n0=NULL;
   tree->n1=NULL;
@@ -44,69 +45,75 @@ tree_type *make_tree (int x) {
 }
 
 
-tree_type *insert (int *key, char *word, tree_type *tree ,int h) {
+tree_type *insert (int *key, char *word, tree_type *tree ,int h,int score) {
   char str[4],str2[3];
   tree_type *new_tree;
-
+  int num;
   if(h<=25){ 
+  if(h<=4)num=3;
+    else if(h<=13)num=2;
+    else num=1;
+  score+=num*key[h];
+
     if(key[h]==0){ 
       if (tree->n0 == NULL) {
 	new_tree = make_tree (h);
 	tree->n0 = new_tree;
       }
-      tree->n0= insert (key, word, tree->n0,++h);
+      tree->n0= insert (key, word, tree->n0,++h,score);
     }
     else if(key[h]==1){ 
       if (tree->n1 == NULL) {
 	new_tree = make_tree (h);
 	tree->n1 = new_tree;
       }
-      tree->n1=insert (key, word, tree->n1,++h);
+      tree->n1=insert (key, word, tree->n1,++h,score);
     }
     else if(key[h]==2){ 
       if (tree->n2 == NULL) {
 	new_tree = make_tree (h);
 	tree->n2 = new_tree;
       }
-      tree->n2=insert (key, word, tree->n2,++h);
+      tree->n2=insert (key, word, tree->n2,++h,score);
     }
     else if(key[h]==3){ 
       if (tree->n3 == NULL) {
 	new_tree = make_tree (h);
 	tree->n3 = new_tree;
       }
-      tree->n3=insert (key, word, tree->n3,++h);
+      tree->n3=insert (key, word, tree->n3,++h,score);
     }
     else if(key[h]==4){ 
       if (tree->n4 == NULL) {
 	new_tree = make_tree (h);
 	tree->n4 = new_tree;
       }
-      tree->n4=insert (key, word, tree->n4,++h);
+      tree->n4=insert (key, word, tree->n4,++h,score);
     }
     else if(key[h]==5){ 
       if (tree->n5 == NULL) {
 	new_tree = make_tree (h);
 	tree->n5 = new_tree;
       }
-      tree->n5=insert (key, word, tree->n5,++h);
+      tree->n5=insert (key, word, tree->n5,++h,score);
     }
     else if(key[h]==6){ 
       if (tree->n6 == NULL) {
 	new_tree = make_tree (h);
 	tree->n6 = new_tree;
       }
-      tree->n6=insert (key, word, tree->n6,++h);
+      tree->n6=insert (key, word, tree->n6,++h,score);
     }
     else{ 
       if (tree->n7 == NULL) {
 	new_tree = make_tree (h);
 	tree->n7 = new_tree;
       }
-      tree->n7=insert (key, word, tree->n7,++h);
+      tree->n7=insert (key, word, tree->n7,++h,score);
     }
   
   } else{ tree->word=word;
+      tree->score=score;
   }
   return tree;
 }
@@ -131,14 +138,13 @@ tree_type *dictionary_tree(tree_type *tree){
   int num[26];
   char *str;
   int r,i,h;
-  fp=fopen("dictionary.txt","r");
-  /* fp=fopen("a.txt","r");*/
-  /*fp=fopen("apple.txt","r");*/
+   fp=fopen("dictionary.txt","r");
+  // fp=fopen("a.txt","r");
+ //fp=fopen("apple.txt","r");
   if(fp==NULL){
     printf("no file\n");
   }
   tree=make_tree(0);
-
   while(1){ 
     str = (char*)malloc(sizeof(str));
     i=fscanf(fp,"%s",str);
@@ -149,14 +155,13 @@ tree_type *dictionary_tree(tree_type *tree){
 	num[h]=0;}
       sort(str,num);
 
-      tree=insert(num,str,tree,0);
+      tree=insert(num,str,tree,0,0);
   
     }
 
   }
 
   fclose(fp);
-
   return(tree);
 }
 
@@ -199,9 +204,9 @@ tree_type *search(int *target, tree_type *tree, int num){
   else return NOT_FOUND;}
 
 tree_type *search_support(int g,int *no0list,int *no0list_num,int i,int *target,tree_type *tree){
-  int h,j;
-  tree_type *anstree;
-
+  int h,j,r=0;
+  tree_type *anstree,*returntree;
+  returntree=NOT_FOUND;
   if(i==g-1){
       
     for(h=0;h<=no0list_num[i];h++){
@@ -213,17 +218,21 @@ tree_type *search_support(int g,int *no0list,int *no0list_num,int i,int *target,
 	return anstree;
       }       	
     }
+    return NOT_FOUND;
   }
   else{
     for(h=0;h<=no0list_num[i];h++){
+     
       anstree=search_support(g,no0list,no0list_num,i+1,target,tree);
       if(anstree!=NOT_FOUND){
-	return anstree;}
+	if(r==0){returntree=anstree;r=1;}
+	else	if(anstree->score>returntree->score)returntree=anstree;
+      }
       target[no0list[i+1]]=no0list_num[i+1];
       target[no0list[i]]--;
     }
   }  
-  return NOT_FOUND;
+  return returntree;
 }
 
 int main(){
@@ -242,7 +251,6 @@ int main(){
     scanf("%s",ques);
     sort(ques,target);/*ソートされた配列が帰ってくる*/
     anstree = search(target,tree,0);
-  
     if (anstree == NOT_FOUND) {
       g=0;
       for(i=0;i<26;i++){
@@ -253,14 +261,13 @@ int main(){
 	}
 	  
       }
-      
       anstree=search_support(g,no0list,no0list_num,0,target,tree);         
       ans=anstree->word;
       if(anstree==NOT_FOUND)printf ("見つかりませんでした。\n");
       else printf("%s\n",ans);
     }
-    else {printf("found\n");
-      printf ("%s\n", ans);
+    else {
+      printf ("%s\n", anstree->word);
     }
   }
 }
