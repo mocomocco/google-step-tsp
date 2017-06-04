@@ -160,7 +160,7 @@ tree_type *dictionary_tree(tree_type *tree){
   return(tree);
 }
 
-char *search(int *target, tree_type *tree, int num){
+tree_type *search(int *target, tree_type *tree, int num){
   int h,p=0;
   if((tree==NULL)&&(num<=26)){
     return (NOT_FOUND);}
@@ -194,31 +194,31 @@ char *search(int *target, tree_type *tree, int num){
   for(h=0;h<26;h++)p+=target[h];
 
   if(p>2){
-    return (tree->word);
+    return (tree);
   }
   else return NOT_FOUND;}
 
-char *search_support(int g,int *no0list,int *no0list_num,int i,int *target,tree_type *tree){
+tree_type *search_support(int g,int *no0list,int *no0list_num,int i,int *target,tree_type *tree){
   int h,j;
-  char *ans;
+  tree_type *anstree;
 
   if(i==g-1){
       
     for(h=0;h<=no0list_num[i];h++){
-      ans=search(target,tree,0);
+      anstree=search(target,tree,0);
       if(h<no0list_num[i]){
 	target[no0list[i]]--;
       }
-      if(ans!=NOT_FOUND){
-	return ans;
+      if(anstree!=NOT_FOUND){
+	return anstree;
       }       	
     }
   }
   else{
     for(h=0;h<=no0list_num[i];h++){
-      ans=search_support(g,no0list,no0list_num,i+1,target,tree);
-      if(ans!=NOT_FOUND){
-	return ans;}
+      anstree=search_support(g,no0list,no0list_num,i+1,target,tree);
+      if(anstree!=NOT_FOUND){
+	return anstree;}
       target[no0list[i+1]]=no0list_num[i+1];
       target[no0list[i]]--;
     }
@@ -227,7 +227,7 @@ char *search_support(int g,int *no0list,int *no0list_num,int i,int *target,tree_
 }
 
 int main(){
-  tree_type *tree;
+  tree_type *tree, *anstree;
   char ques[32];
   char *ans;
   int target[27];
@@ -241,9 +241,9 @@ int main(){
     printf("characters?\n");
     scanf("%s",ques);
     sort(ques,target);/*ソートされた配列が帰ってくる*/
-    ans = search(target,tree,0);
+    anstree = search(target,tree,0);
   
-    if (ans == NOT_FOUND) {
+    if (anstree == NOT_FOUND) {
       g=0;
       for(i=0;i<26;i++){
 	if(target[i]!=0){
@@ -254,9 +254,9 @@ int main(){
 	  
       }
       
-      ans=search_support(g,no0list,no0list_num,0,target,tree);         
-
-      if(ans==NOT_FOUND)printf ("見つかりませんでした。\n");
+      anstree=search_support(g,no0list,no0list_num,0,target,tree);         
+      ans=anstree->word;
+      if(anstree==NOT_FOUND)printf ("見つかりませんでした。\n");
       else printf("%s\n",ans);
     }
     else {printf("found\n");
