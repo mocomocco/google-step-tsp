@@ -1,3 +1,29 @@
+
+
+#tokenize() => readOpen() => Parenthesis() => evaluate() => ...
+
+#という関数の呼び出しが行われていて、
+#なぜかtokenizeしている最中に、evaluateが走ることになってしまっています。
+
+#1. tokenize()で字句解析を終わらせる
+#2. evaluate()で評価する
+
+#という大きな流れで書けるときれいですね。
+#さらに、evaluate()を、
+
+#- evaluateMultiplyDivide()
+#- evaluatePlusMinus()
+#- evaluateParenthesis()
+
+#に分解すれば、とてもきれいにモジュール化できそうです。
+#（現状のプログラムだと、readOpen()とかParenthesis()とかdividetimes()とかが複雑に絡まりあってしまっています。）
+
+#このあたりは「慣れ」が必要なので、ふだんから心がけて書いてみるといいと思います！
+
+#あと細かいことですが、aとかline2とかの変数名は、人が読んでもわかりやすいものにできるといいかなと思いました。
+
+#おつかれさまでした！
+
 def evaluate(tokens):
     answer = 0
     tokens.insert(0, {'type': 'PLUS'}) # Insert a dummy '+' token
