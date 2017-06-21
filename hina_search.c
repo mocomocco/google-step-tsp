@@ -1,9 +1,7 @@
 #include <assert.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 int i, j, k;
 
@@ -102,75 +100,6 @@ int** read_link_file(char *file_name){
     links[id1_current][id2_temp_stack_cnt] = -1;
     id1_last = id1_current;
   }
-}
-
-//start_idからn回でたどりつく単語の割合を求める
-double breadth_first_search(char **words, int **links, int n, int start_id){
-  //IDがiである単語をまだ通ってなければvisited[i]を0、通っていればvisited[i]を1とする
-  int* visited = (int*) malloc(PAGE_NUM_MAX * sizeof(int));
-  for(i = 0; i < PAGE_NUM_MAX; i++){
-    visited[i] = 0;
-  }
-  visited[start_id] = 1;
-
-  int** stack =  (int**) malloc((n + 1) * sizeof(int*));
-  for(i = 0; i < n + 1; i++){
-    stack[i] = (int*) malloc((PAGE_NUM_MAX) * sizeof(int));
-  }
-  int stack_distance = 0;
-  int stack_cnt = 0;
-  stack[stack_distance][stack_cnt++] = start_id;
-  stack[stack_distance][stack_cnt] = -1; //最後の目印
-  int target;
-  int next;
-  int reach_cnt = 1;
-
-  while(1){
-    stack_cnt = 0;
-    i = 0;
-    if(stack[stack_distance][i] == -1){
-      //すべてたどった
-      break;
-    }
-
-    while(1){
-      target = stack[stack_distance][i];
-      j = 0;
-
-      while(1){
-        if(links[target][j] == -1){
-          //targetのリンク先がない、または、targetのリンク先すべてに行ったことがある
-          break;
-        }
-        next = links[target][j];
-        if(visited[next] == 0){
-          //start_idから距離が stack_distace+1である単語のIDをstack[stack_distace + 1][i]に順に保存する
-          stack[stack_distance + 1][stack_cnt++] = next;
-          visited[next] = 1;
-        }
-        j++;
-      }
-      if(stack[stack_distance][i + 1] == -1){
-        //start_idから距離がstack_distaceである単語のリンク先すべてに行ったことがある
-        break;
-      }else{
-        i++;
-      }
-    }
-
-    reach_cnt += stack_cnt;
-    if(stack_distance + 1 != n){
-      //stack[stack_distance + 1][i]の最後の目印として-1を入れる
-      stack[stack_distance + 1][stack_cnt] = -1;
-      stack_distance++;
-    }else{
-      //n回でたどりつく単語をすべてたどった
-      break;
-    }
-  }
-
-  double percentage = (double)reach_cnt / (double)LINKED_PAGE_NUM_MAX;
-  return percentage;
 }
 
 void start_goal(char *start,char *goal){
