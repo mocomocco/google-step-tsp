@@ -220,6 +220,37 @@ for(int i=0;i<leftpointcounter;i++)printf("\t");
   return positionlst[currentpointnum-1].shortestway[leftpoint-1];
 }
 
+wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance shortestway){
+  wayanddistance newshortestway;
+  float x1=positionlst[0].xposition;
+  float x2=positionlst[pointcounter-1].xposition;
+  float y1=positionlst[0].yposition;
+  float y2=positionlst[pointcounter-1].yposition;
+   for (int j=0;j<pointcounter;j++)printf("%d\n",shortestway.way[j]-1);
+ 
+
+  for(int i=2;i<pointcounter-1;i++){
+    int x3=positionlst[i].xposition;
+    int x4=positionlst[i+1].xposition;
+    int y3=positionlst[i].xposition;
+    int y4=positionlst[i+1].xposition;
+
+    int ta = (x3-x4)*(y1-y3)+(y3-y4)*(x3-x1);
+    int tb = (x3-x4)*(y2-y3)+(y3-y4)*(x3-x2);
+    int tc = (x1-x2)*(y3-y1)+(y1-y2)*(x1-x3);
+    int td = (x1-x2)*(y4-y1)+(y1-y2)*(x1-x4);
+    if((tc*td<=0)||(ta*tb<=0)){
+      printf("i:%d\n",i);
+      i--;
+      for(int j=0;j<=i;j++)newshortestway.way[j]=shortestway.way[j];
+      for(int j=1;j+i<pointcounter-1;j++)newshortestway.way[i+j]=shortestway.way[pointcounter-j];
+      newshortestway.way[pointcounter-1]=shortestway.way[i+1];
+      return newshortestway;
+    }
+  }
+  return shortestway;
+}
+
 void memorization(pointdata *positionlst,int pointcounter){
   int leftpoint=pow(2,pointcounter)-1;
   wayanddistance shortestway,shortestway1;
@@ -236,6 +267,8 @@ void memorization(pointdata *positionlst,int pointcounter){
 
   printf("finish memorization!\n");
   printf("distance:%f\n",shortestway.distance);
+  shortestway=CrossOrNot(positionlst,pointcounter,shortestway);
+
   FILE *fp;
   fp=fopen("answer.csv","w");
   fprintf(fp,"index\n");
