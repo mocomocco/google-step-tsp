@@ -176,8 +176,7 @@ wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance
   float x2=positionlst[pointcounter-1].position.xposition;
   float y1=positionlst[0].position.yposition;
   float y2=positionlst[pointcounter-1].position.yposition;
-  for (int j=0;j<pointcounter;j++)printf("%d\n",shortestway.way[j]-1);
- 
+
 
   for(int i=2;i<pointcounter-1;i++){
     int x3=positionlst[i].position.xposition;
@@ -190,7 +189,6 @@ wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance
     int tc = (x1-x2)*(y3-y1)+(y1-y2)*(x1-x3);
     int td = (x1-x2)*(y4-y1)+(y1-y2)*(x1-x4);
     if((tc*td<=0)||(ta*tb<=0)){
-      printf("i:%d\n",i);
       i--;
       for(int j=0;j<=i;j++)newshortestway.way[j]=shortestway.way[j];
       for(int j=1;j+i<pointcounter-1;j++)newshortestway.way[i+j]=shortestway.way[pointcounter-j];
@@ -204,7 +202,6 @@ wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance
 void memorization(pointdata *positionlst,int pointcounter){
   int leftpoint=pow(2,pointcounter)-1;
   wayanddistance shortestway,shortestway1;
-  printf("memorization\n");
   for(int i=0;i<pointcounter;i++){
     for(int j=0;j<leftpoint;j++){
       positionlst[i].shortestway[j].visit=0;
@@ -215,17 +212,15 @@ void memorization(pointdata *positionlst,int pointcounter){
 
   shortestway=RecGetShortestWay(positionlst,pointcounter,leftpoint,1);
 
-  printf("finish memorization!\n");
-  printf("distance:%f\n",shortestway.distance);
   shortestway=CrossOrNot(positionlst,pointcounter,shortestway);
 
   FILE *fp;
   fp=fopen("answer.csv","w");
   fprintf(fp,"index\n");
   for(int i=0;i<pointcounter;i++){
-    printf("%d\n",shortestway.way[i]-1);
     fprintf(fp,"%d\n",shortestway.way[i]-1);
   }
+  printf("LLook at 'answer.csv'\n");
   fclose(fp);
 }
 
@@ -279,14 +274,11 @@ int main(int argc,char *open_filename[]){
     return 0;
   }
 
-  // test();
+   test();
   xyposition *positions;
   int pointcounter=0;
   positions=(xyposition*)malloc(sizeof(xyposition)*16);
   OpenFileAndList(open_filename[1],positions,&pointcounter);
-  for(int i=0;i<pointcounter;i++){
-    printf("No %d | x %f | y %f \n",i+1,positions[i].xposition,positions[i].yposition);
-  }
 
   if (pointcounter<=8){
     pointdata positionlst[pointcounter];
