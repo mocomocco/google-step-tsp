@@ -82,25 +82,30 @@ int EverOrNeverVisited(pointdata *positionlst,int leftpoint,int currentpointnum)
   wayanddistance currentwayanddistance;
   currentwayanddistance=positionlst[currentpointnum-1].shortestway[leftpoint-1];
   if(currentwayanddistance.visit==1){
+    //printf("have been to\n");
+    //printf("distance=%f\n",currentwayanddistance.distance);
     visit=1;
   }
   else {
+    //printf("neverbeento\n");
     visit=0;}
   return visit;
-}
+    }
 
 int GetLeftPointCounter(int *leftpointlst,int pointcounter){
   int counter=0;
-  for(int i=0;i<pointcounter;i++){
-    counter+=leftpointlst[i];
-  }
-  return counter; 
+    for(int i=0;i<pointcounter;i++){
+      counter+=leftpointlst[i];
+    }
+    //printf("leftpointcounter:%d\n",counter);
+    return counter; 
 }
 
 int GetNextPointNum(int *leftpointlst,int nextpointnum,int pointcounter){
   for(;nextpointnum-1<pointcounter;nextpointnum++){
     if(leftpointlst[nextpointnum-1]==1)break;
   }
+  //printf("nextpointnum:%d\n",nextpointnum);
   return nextpointnum;
 }
 
@@ -113,7 +118,11 @@ wayanddistance DirectWayAndDistance(pointdata *positionlst,int currentpointnum,i
   
 
 wayanddistance RecGetShortestWay(pointdata *positionlst,int pointcounter,int leftpoint,int currentpointnum){
+  //printf("RecGetShortestWay\n");
+  //printf("(positionlst,pointcounter=%d,leftpoint=%d,currentpointnum=%d)\n\n",pointcounter,leftpoint,currentpointnum);
+
   int EverVisit=EverOrNeverVisited(positionlst,leftpoint,currentpointnum);
+  //printf("EverVisit:%d\n",EverVisit);
   if(EverVisit){
     return positionlst[currentpointnum-1].shortestway[leftpoint-1];
   }
@@ -139,34 +148,78 @@ wayanddistance RecGetShortestWay(pointdata *positionlst,int pointcounter,int lef
 
   while(1){
     nextpointnum++;
+    //for(int i=0;i<leftpointcounter;i++)printf("\t");
+    //printf("currentpointnum : %d\n",currentpointnum);
     nextpointnum=GetNextPointNum(leftpointlst,nextpointnum,pointcounter);   
     if(nextpointnum-1>=pointcounter)break;
+    /* for(int i=0;i<leftpointcounter;i++)printf("\t");
+    for(int i=0;i<pointcounter;i++){
+      printf("%d ",leftpointlst[i]);
+    }
+    printf("\n↓\n");*/
 
     leftpointlst[nextpointnum-1]=0;
+    /*for(int i=0;i<leftpointcounter;i++)printf("\t");
+    for(int i=0;i<pointcounter;i++){
+      printf("%d ",leftpointlst[i]);
+      }*/
+    //printf("\n");
     MakeLeftPoint(leftpointlst,pointcounter,&newleftpoint);
+    //for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+    //printf("newleftpoint : %d\n\n",newleftpoint);
+
     if(newleftpoint==0){
       for(int i=0;i<leftpointcounter;i++)printf("\t");
-      return  DirectWayAndDistance(positionlst,currentpointnum,leftpoint,nextpointnum);
+      //printf("return DirectWayAndDistance\n");
+        return  DirectWayAndDistance(positionlst,currentpointnum,leftpoint,nextpointnum);
     }
     else{
       float first,rest;
       for(int i=0;i<leftpointcounter;i++)printf("\t");
 
+      //printf("first\n");
       first=RecGetShortestWay(positionlst,pointcounter,leftpoint-newleftpoint,currentpointnum).distance;
+      //   for(int i=0;i<leftpointcounter;i++)printf("\t");
+      //printf("first : RecGetShortestWay(positionlst,pointcounter,%d,%d).distance=%f\n",leftpoint-newleftpoint,currentpointnum, first);
+      //for(int i=0;i<leftpointcounter;i++)printf("\t");
+      //printf("rest\n");
       rest= RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).distance;
-      distance=rest+first;
-      if(distance<positionlst[currentpointnum-1].shortestway[leftpoint-1].distance){
-	positionlst[currentpointnum-1].shortestway[leftpoint-1].distance=distance;
-	positionlst[currentpointnum-1].shortestway[leftpoint-1].way[0]=currentpointnum;
-	for(int i=1;i<=leftpointcounter;i++){
-	  positionlst[currentpointnum-1].shortestway[leftpoint-1].way[i]=RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).way[i-1];
-	}
-      }
-    }
-    leftpointlst[nextpointnum-1]=1;
-  }
-  for(int i=0;i<leftpointcounter;i++)printf("\t");
+      //   for(int i=0;i<leftpointcounter;i++)printf("\t");
 
+      // printf("rest : RecGetShortestWay(positionlst,pointcounter,%d,%d).distance=%f\n",newleftpoint,nextpointnum, rest);
+      // for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+ //printf("RecGetShortestWay(positionlst,pointcounter,%d,%d).distance+RecGetShortestWay(positionlst,pointcounter,%d,%d).distance\n",newleftpoint,nextpointnum,leftpoint-newleftpoint,currentpointnum);
+      distance=rest+first;
+      //for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+      //printf("distance : %f\n\n\n",distance);
+    //for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+//printf("///////////////////////////////////////////////////////\n");
+//for(int i=0;i<leftpointcounter;i++)printf("\t");
+// printf("currentpointnum:%d|leftpoint:%d: shortestway.distance :%f\n///////////////////////////////////////////////////////\n\n\n\n",currentpointnum,leftpoint,positionlst[currentpointnum-1].shortestway[leftpoint-1].distance);
+    if(distance<positionlst[currentpointnum-1].shortestway[leftpoint-1].distance){
+      //for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+      //printf("renewal distance : %f\n",distance);
+	//for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+      //printf("///////////////////////////////////////////////////// \n");
+      positionlst[currentpointnum-1].shortestway[leftpoint-1].distance=distance;
+      positionlst[currentpointnum-1].shortestway[leftpoint-1].way[0]=currentpointnum;
+      for(int i=1;i<=leftpointcounter;i++){
+	positionlst[currentpointnum-1].shortestway[leftpoint-1].way[i]=RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).way[i-1];
+	//printf("%d\n", 	positionlst[currentpointnum-1].shortestway[leftpoint-1].way[i]);
+      }//for(int i=1;i<=leftpointcounter;i++)
+    }// if(distance<shortestway.distance)
+    }//else
+     leftpointlst[nextpointnum-1]=1;
+  }
+for(int i=0;i<leftpointcounter;i++)printf("\t");
+
+//printf("return\n");
   return positionlst[currentpointnum-1].shortestway[leftpoint-1];
 }
 
@@ -176,7 +229,7 @@ wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance
   float x2=positionlst[pointcounter-1].position.xposition;
   float y1=positionlst[0].position.yposition;
   float y2=positionlst[pointcounter-1].position.yposition;
-  for (int j=0;j<pointcounter;j++)printf("%d\n",shortestway.way[j]-1);
+   for (int j=0;j<pointcounter;j++)printf("%d\n",shortestway.way[j]-1);
  
 
   for(int i=2;i<pointcounter-1;i++){
@@ -209,7 +262,7 @@ void memorization(pointdata *positionlst,int pointcounter){
     for(int j=0;j<leftpoint;j++){
       positionlst[i].shortestway[j].visit=0;
       positionlst[i].shortestway[j].distance=INFINITY;
-    }
+      }
   }
   leftpoint-=1;
 
