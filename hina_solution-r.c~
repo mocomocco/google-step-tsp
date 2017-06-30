@@ -1,0 +1,235 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+
+
+typedef struct wayanddistance{
+  float distance;
+  int way[15];
+  int visit;
+}wayanddistance;
+
+typedef struct pointdata{
+  int pointnum;
+  float xposition;
+  float yposition;
+  wayanddistance *shortestway;
+}pointdata;
+
+
+FILE *OpenFile(char *open_filename){
+  FILE *fp;
+  fp=fopen(open_filename,"r");
+  if(fp==NULL){
+    printf("cannot find:%s\n",open_filename);
+    return 0;
+  }
+  return fp;
+}
+
+void ReadFileAndList(FILE *fp,pointdata *positionlst,int *pointcounter){
+  float xposition,yposition;
+  char tmp[2480];
+  char xchar,ychar;
+  fscanf(fp,"%c,%c",&xchar,&ychar);
+  while( fscanf(fp,"%f,%f",&xposition,&yposition)!=EOF){
+    positionlst[*pointcounter].pointnum=*pointcounter+1.0;
+    positionlst[*pointcounter].xposition=xposition;
+    positionlst[*pointcounter].yposition=yposition;
+    *pointcounter+=1;
+  }
+}
+
+void OpenFileAndList(char *open_filename,pointdata *positionlst,int *pointcounter){
+  FILE *fp;
+  char tmp[5];
+  fp=OpenFile(open_filename);
+  ReadFileAndList(fp,positionlst,pointcounter);
+  fclose(fp);
+}
+
+void MakeLeftPoint(int *leftpointlst,int pointcounter,int *leftpoint){
+  int decimal=0;
+  int base=1;
+  for(int i=0;i<pointcounter;i++){
+    decimal=decimal+leftpointlst[i]*base;
+    base *= 2;
+  }
+  *leftpoint=decimal;
+}
+void MakeLeftPointLst(int decimal,int pointcounter,int *leftpointlst){
+  int base = 1;
+  int binary;
+  for (int i=0;i<pointcounter;i++){
+    binary=decimal%2;
+    decimal=decimal/2;
+    leftpointlst[i]=binary;
+  }
+}
+
+float GetsquareDistance(pointdata a,pointdata b){
+  float dx=fabsf(a.xposition-b.xposition);
+  float dy=fabsf(a.yposition-b.yposition);
+  return pow(dx,2)+pow(dy,2);
+}
+
+wayanddistance RecGetShortestWay(pointdata *positionlst,int pointcounter,int leftpoint,int currentpointnum){
+  printf("RecGetShortestWay(positionlst,pointcounter=%d,leftpoint=%d,currentpointnum=%d)\n\n",pointcounter,leftpoint,currentpointnum);
+  for(int i=0;i<3;i++){
+    printf(" [%d].visit=%d\n",i,positionlst[i].shortestway[leftpoint].visit);
+  }
+  if(positionlst[currentpointnum-1].shortestway[leftpoint].visit==1){
+    printf("have been to\n");
+    printf("distance=%f\n",positionlst[currentpointnum-1].shortestway[leftpoint].distance);
+return positionlst[currentpointnum-1].shortestway[leftpoint];
+  }
+  else {
+    printf("neverbeento\n");
+    positionlst[currentpointnum-1].shortestway[leftpoint].visit=1;
+  }
+  int leftpointlst[pointcounter-1];
+  int newleftpoint;
+  int nextpointnum;
+  float distance;
+  int leftpointcounter=0;
+  wayanddistance shortestway;
+  newleftpoint=leftpoint;
+  MakeLeftPointLst(leftpoint,pointcounter,leftpointlst);
+    for(int i=0;i<pointcounter;i++){
+      leftpointcounter+=leftpointlst[i];
+    }
+    printf("leftpointcounter:%d\n",leftpointcounter);
+  nextpointnum=1;
+  while(1){
+    nextpointnum++;
+    for(;leftpointlst[nextpointnum-1]==0;nextpointnum++){
+      if(nextpointnum-1>pointcounter)break;
+    }
+    printf("nextpointnum:%d\n",nextpointnum);
+    if(nextpointnum-1>=pointcounter)break;
+
+    for(int i=0;i<pointcounter;i++){
+      printf("%d ",leftpointlst[i]);
+    }
+    printf("\n↓\n");
+    leftpointlst[nextpointnum-1]=0;
+    for(int i=0;i<pointcounter;i++){
+      printf("%d ",leftpointlst[i]);
+    }
+    printf("\n");
+    MakeLeftPoint(leftpointlst,pointcounter,&newleftpoint);
+    printf("%d\n\n",newleftpoint);
+
+    if(newleftpoint==0){
+      positionlst[currentpointnum-1].shortestway[leftpoint].distance=GetsquareDistance(positionlst[currentpointnum-1],positionlst[nextpointnum-1]);
+      positionlst[currentpointnum-1].shortestway[leftpoint].way[0]=currentpointnum;
+      positionlst[currentpointnum-1].shortestway[leftpoint].way[1]=nextpointnum;
+      return  positionlst[currentpointnum-1].shortestway[leftpoint];
+    }
+    else{
+      printf("RecGetShortestWay(positionlst,pointcounter,%d,%d).distance+RecGetShortestWay(positionlst,pointcounter,%d,%d).distance;\n",newleftpoint,nextpointnum,leftpoint-newleftpoint,currentpointnum);
+      printf("RecGetShortestWay(positionlst,pointcounter,%d,%d).distance=%f\n",newleftpoint,nextpointnum, RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).distance);
+    distance=
+      RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).distance
+      +RecGetShortestWay(positionlst,pointcounter,leftpoint-newleftpoint,currentpointnum).distance;
+    printf("distance : %f\n",distance);
+    printf("shortestway.distance :%f\n",positionlst[currentpointnum].shortestway[leftpoint].distance);
+    if(distance<positionlst[currentpointnum].shortestway[leftpoint].distance){
+      printf("renewal distance : %f\n",distance);
+      printf("///////////////////////////////////////////////////// \n");
+      positionlst[currentpointnum].shortestway[leftpoint].distance=distance;
+      positionlst[currentpointnum].shortestway[leftpoint].way[0]=currentpointnum;
+      for(int i=1;i<=leftpointcounter;i++){
+	positionlst[currentpointnum].shortestway[leftpoint].way[i]=RecGetShortestWay(positionlst,pointcounter,newleftpoint,nextpointnum).way[i-1];
+      }//for(int i=1;i<=leftpointcounter;i++)
+    }// if(distance<shortestway.distance)
+    }//else
+     leftpointlst[nextpointnum-1]=1;
+  }
+  printf("return\n");
+  return positionlst[currentpointnum].shortestway[leftpoint];
+}
+
+void memorization(pointdata *positionlst,int pointcounter){
+  wayanddistance shortestway;
+  int leftpoint=pow(2,pointcounter)-1;
+  for(int i=0;i<pointcounter;i++){
+    for(int j=0;j<leftpoint;j++){
+      positionlst[i].shortestway=(wayanddistance*)malloc(leftpoint);
+      positionlst[i].shortestway[j].visit=0;
+      positionlst[i].shortestway[j].distance=INFINITY;
+      }
+  }
+  leftpoint=leftpoint-1;
+  shortestway=RecGetShortestWay(positionlst,pointcounter,leftpoint,1);
+  printf("finish memorization!\n");
+  printf("distance:%f\n",shortestway.distance);
+  for(int i=0;i<pointcounter;i++){
+    printf("%d\n",shortestway.way[i]);
+  }
+}
+
+void OpenFileAndListTest(pointdata *testpositionlst,int *testpointcounter){
+  printf("OpenFileAndListTest\n");
+  OpenFileAndList("ForTest.txt",testpositionlst,testpointcounter);
+  for(int i=1;i<=*testpointcounter;i++){
+    if(( testpositionlst[i-1].pointnum!=i)||(testpositionlst[i-1].xposition)!=(float)i*2||(testpositionlst[i-1]).yposition!=(float)i*2+1.0){
+      printf("ERROR : OpenFileAndList\n ");
+    }
+  }
+
+  printf("PASS : OpenFileAndList\n");
+}
+
+void MakeLeftPointLstTest(pointdata *testpositionlst,int testpointcounter){
+  printf("MakeLeftPointLstTest\n");
+  int testleftpoint=pow(2,testpointcounter)-1;
+  int testleftpointlst[testpointcounter-1];
+  MakeLeftPointLst(testleftpoint,testpointcounter,testleftpointlst);
+  for(int i;i<testpointcounter;i++){
+    if(testleftpointlst[i]!=1){
+      printf("ERROR:MakeLeftPointLst\n");
+      break;
+    }
+  }
+  printf("PASS:MakeLeftPointLst\n");
+}
+
+void memorizationTest(pointdata *testpositionlst,int testpointcounter){
+  printf("memorizationTest\n");
+  MakeLeftPointLstTest(testpositionlst,testpointcounter);
+
+}
+
+void test(){
+  pointdata *testpositionlst;
+  int testpointcounter=0;
+  testpositionlst=(pointdata*)malloc(sizeof(pointdata)*2480);
+ 
+  printf("start test\n");
+  OpenFileAndListTest(testpositionlst,&testpointcounter);
+  memorizationTest(testpositionlst,testpointcounter);
+}
+
+
+int main(int argc,char *open_filename[]){
+
+  if(argc==1){
+    printf("No filename\n");
+    return 0;
+  }
+
+  test();
+
+  pointdata *positionlst;
+  int pointcounter=0;
+  positionlst=(pointdata*)malloc(sizeof(pointdata)*2480);
+  OpenFileAndList(open_filename[1],positionlst,&pointcounter);
+
+  for(int i=0;i<pointcounter;i++){
+    printf("No %d | x %f | y %f \n",positionlst[i].pointnum,positionlst[i].xposition,positionlst[i].yposition);
+  }
+
+  if (pointcounter<=16)memorization(positionlst,pointcounter);
+  else printf("too much point!\n");
+}
