@@ -9,14 +9,10 @@ typedef struct wayanddistance{
   int visit;
 }wayanddistance;
 
-typedef struct xyposition{
+typedef struct pointdata{
+  int pointnum;
   float xposition;
   float yposition;
-}xyposition;
-
-
-typedef struct pointdata{
-  xyposition position;
   wayanddistance shortestway[256];
 }pointdata;
 
@@ -31,24 +27,24 @@ FILE *OpenFile(char *open_filename){
   return fp;
 }
 
-void ReadFileAndList(FILE *fp,xyposition *positions,int *pointcounter){
+void ReadFileAndList(FILE *fp,pointdata *positionlst,int *pointcounter){
   float xposition,yposition;
   char tmp[2480];
   char xchar,ychar;
   fscanf(fp,"%c,%c",&xchar,&ychar);
   while( fscanf(fp,"%f,%f",&xposition,&yposition)!=EOF){
- 
-    positions[*pointcounter].xposition=xposition;
-    positions[*pointcounter].yposition=yposition;
+    positionlst[*pointcounter].pointnum=*pointcounter+1.0;
+    positionlst[*pointcounter].xposition=xposition;
+    positionlst[*pointcounter].yposition=yposition;
     *pointcounter+=1;
   }
 }
 
-void OpenFileAndList(char *open_filename,xyposition *positions,int *pointcounter){
+void OpenFileAndList(char *open_filename,pointdata *positionlst,int *pointcounter){
   FILE *fp;
   char tmp[5];
   fp=OpenFile(open_filename);
-  ReadFileAndList(fp,positions,pointcounter);
+  ReadFileAndList(fp,positionlst,pointcounter);
   fclose(fp);
 }
 
@@ -72,8 +68,8 @@ void MakeLeftPointLst(int decimal,int pointcounter,int *leftpointlst){
 }
 
 float GetDistance(pointdata a,pointdata b){
-  float dx=fabsf(a.position.xposition-b.position.xposition);
-  float dy=fabsf(a.position.yposition-b.position.yposition);
+  float dx=fabsf(a.xposition-b.xposition);
+  float dy=fabsf(a.yposition-b.yposition);
   return sqrt(pow(dx,2)+pow(dy,2));
 }
 
@@ -225,18 +221,18 @@ for(int i=0;i<leftpointcounter;i++)printf("\t");
 
 wayanddistance CrossOrNot(pointdata *positionlst,int pointcounter,wayanddistance shortestway){
   wayanddistance newshortestway;
-  float x1=positionlst[0].position.xposition;
-  float x2=positionlst[pointcounter-1].position.xposition;
-  float y1=positionlst[0].position.yposition;
-  float y2=positionlst[pointcounter-1].position.yposition;
+  float x1=positionlst[0].xposition;
+  float x2=positionlst[pointcounter-1].xposition;
+  float y1=positionlst[0].yposition;
+  float y2=positionlst[pointcounter-1].yposition;
    for (int j=0;j<pointcounter;j++)printf("%d\n",shortestway.way[j]-1);
  
 
   for(int i=2;i<pointcounter-1;i++){
-    int x3=positionlst[i].position.xposition;
-    int x4=positionlst[i+1].position.xposition;
-    int y3=positionlst[i].position.xposition;
-    int y4=positionlst[i+1].position.xposition;
+    int x3=positionlst[i].xposition;
+    int x4=positionlst[i+1].xposition;
+    int y3=positionlst[i].xposition;
+    int y4=positionlst[i+1].xposition;
 
     int ta = (x3-x4)*(y1-y3)+(y3-y4)*(x3-x1);
     int tb = (x3-x4)*(y2-y3)+(y3-y4)*(x3-x2);
@@ -282,11 +278,11 @@ void memorization(pointdata *positionlst,int pointcounter){
   fclose(fp);
 }
 
-void OpenFileAndListTest(xyposition *testpositions,int *testpointcounter){
+void OpenFileAndListTest(pointdata *testpositionlst,int *testpointcounter){
   printf("OpenFileAndListTest\n");
-  OpenFileAndList("ForTest.txt",testpositions,testpointcounter);
+  OpenFileAndList("ForTest.txt",testpositionlst,testpointcounter);
   for(int i=1;i<=*testpointcounter;i++){
-    if((testpositions[i-1].xposition)!=(float)i*2||(testpositions[i-1]).yposition!=(float)i*2+1.0){
+    if(( testpositionlst[i-1].pointnum!=i)||(testpositionlst[i-1].xposition)!=(float)i*2||(testpositionlst[i-1]).yposition!=(float)i*2+1.0){
       printf("ERROR : OpenFileAndList\n ");
     }
   }
@@ -315,13 +311,13 @@ void memorizationTest(pointdata *testpositionlst,int testpointcounter){
 }
 
 void test(){
-  xyposition *testpositions;
+  pointdata *testpositionlst;
   int testpointcounter=0;
-  testpositions=(xyposition*)malloc(sizeof(xyposition)*2480);
-  pointdata testpositionlst;
+  testpositionlst=(pointdata*)malloc(sizeof(pointdata)*2480);
+ 
   printf("start test\n");
-  OpenFileAndListTest(testpositions,&testpointcounter);
-  //  memorizationTest(testpositionlst,testpointcounter);
+  OpenFileAndListTest(testpositionlst,&testpointcounter);
+  memorizationTest(testpositionlst,testpointcounter);
 }
 
 
@@ -332,21 +328,17 @@ int main(int argc,char *open_filename[]){
     return 0;
   }
 
-  // test();
-  xyposition *positions;
+  test();
+
+  pointdata *positionlst;
   int pointcounter=0;
-  positions=(xyposition*)malloc(sizeof(xyposition)*16);
-  OpenFileAndList(open_filename[1],positions,&pointcounter);
+  positionlst=(pointdata*)malloc(16);
+  OpenFileAndList(open_filename[1],positionlst,&pointcounter);
+
   for(int i=0;i<pointcounter;i++){
-    printf("No %d | x %f | y %f \n",i+1,positions[i].xposition,positions[i].yposition);
+    printf("No %d | x %f | y %f \n",positionlst[i].pointnum,positionlst[i].xposition,positionlst[i].yposition);
   }
 
-  if (pointcounter<=8){
-    pointdata positionlst[pointcounter];
-    for(int i=0;i<pointcounter;i++){
-      positionlst[i].position=positions[i];
-    }
-    memorization(positionlst,pointcounter);
-  }
+  if (pointcounter<=8)memorization(positionlst,pointcounter);
   else printf("too much point!\n");
 }
